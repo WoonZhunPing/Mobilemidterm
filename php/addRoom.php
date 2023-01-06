@@ -2,10 +2,10 @@
 if (!isset($_POST)) {
     $response = array('status' => 'failed', 'data' => null);
     sendJsonResponse($response);
+   
     die();
 }
 include_once("dbconnect.php");
-
 
 $roomName = $_POST['roomName'];
 $roomDesc = $_POST['roomDesc'];
@@ -14,14 +14,33 @@ $roomProperty = $_POST['roomProperty'];
 $roomPrice = $_POST['roomPrice'];
 $roomState = $_POST['roomState'];
 $roomLocality = $_POST['roomLocality'];
+$roomLatitude =$_POST['roomLatitude'];
+$roomLongitude =$_POST['roomLongtitude'];
+$userId = $_POST['userId'];
+$image = $_POST['image'];
+$image1 = $_POST['image1'];
+$image2 = $_POST['image2'];
 
 
-$sqlinsert = "INSERT INTO room (roomName,roomDesc,roomCategory,roomProperty,roomPrice,roomState,roomLocality) VALUES('$roomName','$roomDesc','$roomCategory','$roomProperty','$roomPrice','$roomState','$roomLocality')";
+$sqlinsert = "INSERT INTO room (roomName,roomDesc,roomCategory,roomProperty,roomPrice,roomState,roomLocality,roomLatitude,roomLongitude,userId) VALUES('$roomName','$roomDesc','$roomCategory','$roomProperty','$roomPrice','$roomState','$roomLocality','$roomLatitude','$roomLongitude','$userId')";
 try {
     if ($conn->query($sqlinsert) === true) {
+        
+        $decoded_string = base64_decode($image);
+        $decoded_string1 = base64_decode($image1);
+        $decoded_string2 = base64_decode($image2);
+			$filename = mysqli_insert_id($conn);
+			$path = 'C:/xampp1/htdocs/homestay/assets/roomImages/'.$filename.'_1.png';
+            $path1 = 'C:/xampp1/htdocs/homestay/assets/roomImages/'.$filename.'_2.png';
+            $path2 = 'C:/xampp1/htdocs/homestay/assets/roomImages/'.$filename.'_3.png';
+			file_put_contents($path, $decoded_string);
+            file_put_contents($path1, $decoded_string1);
+            file_put_contents($path2, $decoded_string2);
+         
         $response = array('status' => 'success', 'data' => null);
         sendJsonResponse($response);
     } else {
+        
         $response = array('status' => 'failed', 'data' => null);
         sendJsonResponse($response);
     }
