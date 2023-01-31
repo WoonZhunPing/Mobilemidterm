@@ -40,8 +40,26 @@ class Room {
     roomLatitude = json['roomLatitude'];
     roomLongitude = json['roomLongitude'];
     roomRegDate = json['roomRegDate'];
+    userId = json['userId'];
     
    
+  }
+    Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['roomId'] = roomId;
+    data['roomName'] = roomName;
+    data['roomDesc'] = roomDesc;
+    data['roomCategory'] = roomCategory;
+    data['roomProperty'] = roomProperty;
+    data['roomPrice'] = roomPrice;
+    data['roomState'] = roomState;
+    data['roomLocality'] = roomLocality;
+    data['roomLatititude'] = roomLatitude;
+    data['roomLongtitude'] = roomLongitude;
+    data['roomRegDate'] = roomRegDate;
+    data['userId'] = userId;
+    
+    return data;
   }
 
   @override

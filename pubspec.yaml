@@ -72,6 +72,7 @@ flutter:
       - assets/images/homeStay.png
       - assets/images/defaultUser.jpg
       - assets/images/sampleRoom.jpg
+      - assets/images/background.jpg
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

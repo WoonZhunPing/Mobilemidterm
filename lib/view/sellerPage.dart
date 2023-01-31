@@ -1,5 +1,6 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:fluttertoast/fluttertoast.dart';
@@ -9,6 +10,7 @@ import 'package:homestay/config.dart';
 import 'package:homestay/model/room.dart';
 import 'package:homestay/model/user.dart';
 import 'package:homestay/view/addHomeStay.dart';
+import 'package:homestay/view/editSellerRoom.dart';
 import 'package:http/http.dart' as http;
 import 'package:ndialog/ndialog.dart';
 import 'dart:convert';
@@ -169,7 +171,7 @@ class _SellerPageState extends State<SellerPage> {
                                       ),
                                     ),
                                     Flexible(
-                                        flex: 4,
+                                        flex: 7,
                                         child: Padding(
                                           padding: const EdgeInsets.all(8.0),
                                           child: Column(
@@ -191,6 +193,35 @@ class _SellerPageState extends State<SellerPage> {
                                                   roomlist[index]
                                                       .roomRegDate
                                                       .toString()))),
+                                              Row(
+                                                children: [
+                                                  Container(
+                                                    margin:
+                                                        const EdgeInsets.only(
+                                                            right: 7),
+                                                    width: resWidth / 5,
+                                                    child: GestureDetector(
+                                                      onTap: () =>
+                                                          _editHomeStay(index),
+                                                      child: const Icon(
+                                                        Icons.edit,
+                                                        size: 20.0,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  SizedBox(
+                                                    width: resWidth / 5,
+                                                    child: GestureDetector(
+                                                      onTap: () =>
+                                                          _deleteRoom(index),
+                                                      child: const Icon(
+                                                        Icons.delete,
+                                                        size: 20.0,
+                                                      ),
+                                                    ),
+                                                  )
+                                                ],
+                                              ),
                                             ],
                                           ),
                                         ))
@@ -366,5 +397,149 @@ class _SellerPageState extends State<SellerPage> {
         return;
       });
     });
+  }
+
+  _deleteRoom(int index) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(20.0))),
+          title: const Text(
+            "Delete homeStay?",
+            style: TextStyle(
+              fontSize: 16,
+            ),
+          ),
+          content: const Text("Are you sure?",
+              style: TextStyle(
+                fontSize: 16,
+              )),
+          actions: <Widget>[
+            TextButton(
+              child: const Text(
+                "Yes",
+                style: TextStyle(
+                  fontSize: 14,
+                ),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _deleteRoomSql(index);
+              },
+            ),
+            TextButton(
+              child: const Text(
+                "No",
+                style: TextStyle(
+                  fontSize: 14,
+                ),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _deleteRoomSql(int index) {
+    String roomId = roomlist[index].roomId;
+
+    http.post(Uri.parse("${Config.server}/homestay/php/deleteRoom.php"), body: {
+      "roomId": roomId,
+      "userId": widget.user.id,
+    }).then((response) {
+      var data = jsonDecode(response.body);
+
+      setState(() {});
+      if (response.statusCode == 200 && data['status'] == 'success') {
+        Fluttertoast.showToast(
+          msg: "Delete Success",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          fontSize: 20.0,
+        );
+        setState(() {
+          ProgressDialog progressDialog = ProgressDialog(context,
+              message: const Text("Deleting Room...."),
+              title: const Text(
+                  "Please wait for the deletion process to complete"));
+          progressDialog.show();
+          Future.delayed(const Duration(seconds: 3)).then((value) {
+            progressDialog.dismiss();
+            _loadHomestays();
+          });
+        });
+        return;
+      } else {
+        Fluttertoast.showToast(
+          msg: "Homestay delete Failed",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          fontSize: 20.0,
+        );
+        return;
+      }
+    });
+  }
+
+  _editHomeStay(int index) async {
+    if (widget.user.id == "0") {
+      Fluttertoast.showToast(
+          msg: "Please register an account",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          fontSize: 14.0);
+      return;
+    }
+    Room room = Room.fromJson(roomlist[index].toJson());
+
+    //todo update seller object with empty object.
+    ProgressDialog progressDialog = ProgressDialog(
+      context,
+      blur: 5,
+      message: const Text("Loading..."),
+      title: const Text('Redirecting to edit room'),
+    );
+    progressDialog.show();
+    if (await _checkPermissionGetLoc()) {
+      progressDialog.dismiss();
+
+      await Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (content) => EditSellerRoom(
+                  position: _position,
+                  user: widget.user,
+                  placemarks: placemarks,
+                  room: room)));
+    } else {
+      Fluttertoast.showToast(
+          msg: "Please allow the app to access the location",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          fontSize: 14.0);
+    }
+    // Timer(const Duration(seconds: 1), () {
+    //   progressDialog.dismiss();
+    //   Navigator.push(
+    //       context,
+    //       MaterialPageRoute(
+    //           builder: (content) => EditSellerRoom(
+    //                 position: _position,
+    //                 user: widget.user,
+    //                 placemarks: placemarks,
+    //                 room: room,
+    //               )));
+
+    progressDialog.dismiss();
   }
 }

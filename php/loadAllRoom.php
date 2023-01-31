@@ -1,10 +1,16 @@
 <?php
-
-
 include_once("dbconnect.php");
-$sqlroom = "SELECT * FROM room ";
+$results_per_page = 6;
+$pageno = (int)$_GET['pageno'];
+$page_first_result = ($pageno - 1) * $results_per_page;
 
-$result = $conn-> query($sqlroom);
+$sqlroom = "SELECT * FROM room ";
+$result = $conn->query($sqlroom);
+$number_of_result = $result->num_rows;
+$number_of_page = ceil($number_of_result / $results_per_page);
+
+$sqlroom = $sqlroom."LIMIT $page_first_result , $results_per_page";
+$result = $conn->query($sqlroom);
 
 if ($result->num_rows > 0) {
     $roomarray["rooms"] = array();
@@ -24,10 +30,9 @@ if ($result->num_rows > 0) {
         $roomlist['userId'] = $row['userId'];
         array_push($roomarray["rooms"], $roomlist);
     }
-    $response = array('status' => 'success', 'data' => $roomarray);
+    $response = array('status' => 'success', 'numofpage'=>"$number_of_page",'numberofresult'=>"$number_of_result",'data' => $roomarray);
     sendJsonResponse($response);
-} 
-else {
+} else {
     $response = array('status' => 'failed', 'data' => null);
     sendJsonResponse($response);
 }

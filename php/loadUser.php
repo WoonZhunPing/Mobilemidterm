@@ -1,31 +1,36 @@
 <?php
-if (!isset($_POST)) {
+error_reporting(0);
+if (!isset($_GET['userId'])) {
     $response = array('status' => 'failed', 'data' => null);
     sendJsonResponse($response);
     die();
 }
+$userId = $_GET['userId'];
 include_once("dbconnect.php");
-$email = $_POST['email'];
-$password = sha1($_POST['password']);
-$sqllogin = "SELECT * FROM user WHERE userEmail = '$email' AND userPassword = '$password'";
-$result = $conn-> query($sqllogin);
+$sqlroom = "SELECT * FROM user WHERE userId = '$userId'";
 
-if($result-> num_rows >0){ 
-while ($row = $result -> fetch_assoc()) {
+$result = $conn-> query($sqlroom);
+
+if ($result->num_rows > 0) {
+    $userarray["users"] = array();
+    while ($row = $result->fetch_assoc()) {
         $userlist = array();
         $userlist['id'] = $row['userId'];
         $userlist['name'] = $row['userName'];
         $userlist['email'] = $row['userEmail'];
         $userlist['regdate'] = $row['userRegDate'];
-        $uesrlist['telephone'] = $row['telephone'];
-        $response = array('status' => 'success', 'data' => $userlist);
-        sendJsonResponse($response);
+        $userlist['telephone'] = $row['telephone'];
+     
+        array_push($userarray["users"], $userlist);
     }
-}else{
+    $response = array('status' => 'success', 'data' => $userarray);
+    sendJsonResponse($response);
+} 
+else {
     $response = array('status' => 'failed', 'data' => null);
     sendJsonResponse($response);
 }
-$conn->close();
+
 function sendJsonResponse($sentArray)
 {
     header('Content-Type: application/json');

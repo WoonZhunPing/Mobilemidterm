@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:homestay/model/user.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:homestay/view/sellerPage.dart';
-import 'package:http/http.dart' as http;
+import 'package:http/http.dart'as http;
 import 'package:ndialog/ndialog.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:geolocator/geolocator.dart';
@@ -14,27 +14,33 @@ import 'package:geocoding/geocoding.dart';
 
 import 'package:homestay/config.dart';
 
-class AddHomeStay extends StatefulWidget {
-  final Position position;
-  final List<Placemark> placemarks;
-  const AddHomeStay(
-      {Key? key,
-      required this.user,
-      required this.position,
-      required this.placemarks})
-      : super(key: key);
+import '../model/room.dart';
+
+
+
+class EditSellerRoom extends StatefulWidget {
+    final Position position;
+ final List<Placemark> placemarks;
+  const EditSellerRoom({Key? key, required this.user, required this.room,  required this.position,
+        required this.placemarks}) : super(key: key);
   final User user;
+  final Room room;
 
   @override
-  State<AddHomeStay> createState() => _AddHomeStayState();
+  State<EditSellerRoom> createState() => _EditSellerRoomState();
 }
 
-class _AddHomeStayState extends State<AddHomeStay> {
+class _EditSellerRoomState extends State<EditSellerRoom> {
+
+
+  
+ 
+
   final _formKey = GlobalKey<FormState>();
   File? image;
   File? image1;
   File? image2;
-  var pathAsset = "assets/images/sampleRoom.jpg";
+  
 
   String? dropdownvalueCategory;
   String? dropdownvalueProperty;
@@ -53,6 +59,8 @@ class _AddHomeStayState extends State<AddHomeStay> {
   final focusLocality = FocusNode();
   final focusPrice = FocusNode();
 
+  
+
   final TextEditingController _nameController = TextEditingController();
 
   final TextEditingController _descriptionController = TextEditingController();
@@ -63,17 +71,26 @@ class _AddHomeStayState extends State<AddHomeStay> {
 
   final TextEditingController _priceController = TextEditingController();
 
-  var _lat, _lng;
+  var _lat, _lng,roomE;
 
-  @override
+   @override
   void initState() {
     super.initState();
-
-    _lat = widget.position.latitude.toString();
+    
+     _lat = widget.position.latitude.toString();
     _lng = widget.position.longitude.toString();
+    
 
     _stateController.text = widget.placemarks[0].administrativeArea.toString();
     _localityController.text = widget.placemarks[0].locality.toString();
+
+    _nameController.text = widget.room.roomName.toString();
+    _descriptionController.text = widget.room.roomDesc.toString();
+    _priceController.text = widget.room.roomPrice.toString();
+    dropdownvalueCategory = widget.room.roomCategory.toString();
+    dropdownvalueProperty = widget.room.roomProperty.toString();
+
+    
   }
 
   @override
@@ -82,7 +99,7 @@ class _AddHomeStayState extends State<AddHomeStay> {
       backgroundColor: const Color.fromRGBO(24, 24, 32, 1),
       appBar: AppBar(
         backgroundColor: const Color.fromRGBO(24, 24, 32, 1),
-        title: const Text('Add Home Stay'),
+        title: const Text('Edit Home Stay'),
       ),
       body: Center(
         child: Column(
@@ -91,70 +108,76 @@ class _AddHomeStayState extends State<AddHomeStay> {
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
-                  Container(
-                    width: 300,
-                    height: 150,
-                    child: GestureDetector(
-                      onTap: selectImage,
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 5, 20, 5),
-                        child: Card(
-                          child: Container(
-                              decoration: BoxDecoration(
-                            image: DecorationImage(
-                              image: image == null
-                                  ? AssetImage(pathAsset)
-                                  : FileImage(image!) as ImageProvider,
-                              fit: BoxFit.cover,
+                       Container(
+                        width: 300,
+                        height: 150,
+                         child: GestureDetector(
+                              onTap: selectImage,
+                              child: Padding(
+                                padding: const EdgeInsets.fromLTRB(20, 5, 20, 5),
+                                child: Card(
+                                  child: Container(
+                                      decoration: BoxDecoration(
+                                    image: DecorationImage(
+                                      image: image == null
+                                      //change
+                                          ? NetworkImage("${Config.server}/homestay/assets/roomImages/${widget.room.roomId}_1.png")
+                                          : FileImage(image!) as ImageProvider,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  )),
+                                ),
+                              ),  
                             ),
-                          )),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Container(
-                    width: 300,
-                    height: 150,
-                    child: GestureDetector(
-                      onTap: selectImage1,
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 5, 20, 5),
-                        child: Card(
-                          child: Container(
-                              decoration: BoxDecoration(
-                            image: DecorationImage(
-                              image: image1 == null
-                                  ? AssetImage(pathAsset)
-                                  : FileImage(image1!) as ImageProvider,
-                              fit: BoxFit.cover,
+                       ),
+                     
+                        Container(
+                           width: 300,
+                        height: 150,
+                          child: GestureDetector(
+                              onTap: selectImage1,
+                              child: Padding(
+                                padding: const EdgeInsets.fromLTRB(20, 5, 20, 5),
+                                child: Card(
+                                  child: Container(
+                                      decoration: BoxDecoration(
+                                    image: DecorationImage(
+                                      image: image1 == null
+                                          ? NetworkImage("${Config.server}/homestay/assets/roomImages/${widget.room.roomId}_2.png")
+                                          : FileImage(image1!) as ImageProvider,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  )),
+                                ),
+                              ),
                             ),
-                          )),
                         ),
-                      ),
-                    ),
-                  ),
-                  Container(
-                    width: 300,
-                    height: 150,
-                    child: GestureDetector(
-                      onTap: selectImage2,
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 5, 20, 5),
-                        child: Card(
-                          child: Container(
-                              decoration: BoxDecoration(
-                            image: DecorationImage(
-                              image: image2 == null
-                                  ? AssetImage(pathAsset)
-                                  : FileImage(image2!) as ImageProvider,
-                              fit: BoxFit.cover,
+
+                          Container(
+                        width: 300,
+                        height: 150,
+                         child: GestureDetector(
+                              onTap: selectImage2,
+                              child: Padding(
+                                padding: const EdgeInsets.fromLTRB(20, 5, 20, 5),
+                                child: Card(
+                                  child: Container(
+                                      decoration: BoxDecoration(
+                                    image: DecorationImage(
+                                      image: image2 == null
+                                          ? NetworkImage("${Config.server}/homestay/assets/roomImages/${widget.room.roomId}_3.png")
+                                          : FileImage(image2!) as ImageProvider,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  )),
+                                ),
+                              ),  
                             ),
-                          )),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                       ),
+                     
+                    ],
+                  
+                
               ),
             ),
             Flexible(
@@ -181,6 +204,7 @@ class _AddHomeStayState extends State<AddHomeStay> {
                                     .requestFocus(focusPlaceName);
                               },
                               controller: _nameController,
+                              
                               style: const TextStyle(
                                 color: Colors.grey,
                               ),
@@ -382,55 +406,54 @@ class _AddHomeStayState extends State<AddHomeStay> {
                           Row(
                             children: [
                               Flexible(
-                                flex: 5,
-                                child: TextFormField(
-                                  textInputAction: TextInputAction.next,
-                                  validator: (val) =>
-                                      val!.isEmpty || (val.length < 3)
-                                          ? "Current State"
-                                          : null,
-                                  enabled: false,
-                                  controller: _stateController,
-                                  style: const TextStyle(
-                                    color: Colors.grey,
-                                  ),
-                                  decoration: const InputDecoration(
-                                    icon: Icon(
-                                      Icons.flag_outlined,
-                                      color: Colors.white,
+                          flex: 5,
+                          child: TextFormField(
+                              textInputAction: TextInputAction.next,
+                              validator: (val) =>
+                                  val!.isEmpty || (val.length < 3)
+                                      ? "Current State"
+                                      : null,
+                              enabled: false,
+                              controller: _stateController,
+                                      style: const TextStyle(
+                                        color: Colors.grey,
+                                      ),
+                                      decoration: const InputDecoration(
+                                        icon: Icon(
+                                          Icons.flag_outlined,
+                                          color: Colors.white,
+                                        ),
+                                        labelText: 'State',
+                                        labelStyle: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: Color.fromARGB(
+                                                255, 203, 200, 200)),
+                                        enabledBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.all(
+                                                Radius.circular(10)),
+                                            borderSide: BorderSide(
+                                                width: 2, color: Colors.grey)),
+                                        contentPadding: EdgeInsets.all(10),
+                                        border: OutlineInputBorder(
+                                          gapPadding: 10,
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(10)),
+                                        ),
+                                      ),
                                     ),
-                                    labelText: 'State',
-                                    labelStyle: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color:
-                                            Color.fromARGB(255, 203, 200, 200)),
-                                    enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.all(
-                                            Radius.circular(10)),
-                                        borderSide: BorderSide(
-                                            width: 2, color: Colors.grey)),
-                                    contentPadding: EdgeInsets.all(10),
-                                    border: OutlineInputBorder(
-                                      gapPadding: 10,
-                                      borderRadius:
-                                          BorderRadius.all(Radius.circular(10)),
-                                    ),
                                   ),
-                                ),
-                              ),
 
                               //locality
                               Flexible(
                                   flex: 5,
-                                  child: TextFormField(
-                                    textInputAction: TextInputAction.next,
-                                    enabled: false,
-                                    validator: (val) =>
-                                        val!.isEmpty || (val.length < 3)
-                                            ? "Current Locality"
-                                            : null,
-                                    controller: _localityController,
-                                    keyboardType: TextInputType.text,
+                        child: TextFormField(
+                            textInputAction: TextInputAction.next,
+                            enabled: false,
+                            validator: (val) => val!.isEmpty || (val.length < 3)
+                                ? "Current Locality"
+                                : null,
+                            controller: _localityController,
+                            keyboardType: TextInputType.text,
                                     style: const TextStyle(
                                       color: Colors.grey,
                                     ),
@@ -478,8 +501,8 @@ class _AddHomeStayState extends State<AddHomeStay> {
                                           side: const BorderSide(
                                               color: Colors.white))),
                                 ),
-                                onPressed: _addButton, //add method here
-                                child: const Text("Add home stay",
+                                onPressed: _updateButton, //add method here
+                                child: const Text("Update home stay",
                                     style: TextStyle(
                                       fontSize: 16,
                                       color: Colors.white,
@@ -498,7 +521,7 @@ class _AddHomeStayState extends State<AddHomeStay> {
     );
   }
 
-  void _addButton() {
+  void _updateButton() {
     if (!_formKey.currentState!.validate()) {
       Fluttertoast.showToast(
           msg: "Incompleted registration form",
@@ -510,15 +533,15 @@ class _AddHomeStayState extends State<AddHomeStay> {
       return;
     }
 
-    if (image == null || image1 == null || image2 == null) {
-      Fluttertoast.showToast(
-          msg: "You need to provide 3 picture of your homestay",
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          timeInSecForIosWeb: 1,
-          fontSize: 14.0);
-      return;
-    }
+    // if (image == null || image1 == null || image2 == null) {
+    //   Fluttertoast.showToast(
+    //       msg: "You need to provide 3 picture of your homestay",
+    //       toastLength: Toast.LENGTH_SHORT,
+    //       gravity: ToastGravity.BOTTOM,
+    //       timeInSecForIosWeb: 1,
+    //       fontSize: 14.0);
+    //   return;
+    // }
 
     showDialog(
       context: context,
@@ -527,7 +550,7 @@ class _AddHomeStayState extends State<AddHomeStay> {
           shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(20.0))),
           title: const Text(
-            "Add new room for homeStay?",
+            "Update homeStay's information?",
             style: TextStyle(
               fontSize: 16,
             ),
@@ -546,7 +569,7 @@ class _AddHomeStayState extends State<AddHomeStay> {
               ),
               onPressed: () {
                 Navigator.of(context).pop();
-                _addNewRoom();
+                _updateRoomInfo();
               },
             ),
             TextButton(
@@ -566,7 +589,7 @@ class _AddHomeStayState extends State<AddHomeStay> {
     );
   }
 
-  void _addNewRoom() {
+  void _updateRoomInfo() {
     FocusScope.of(context).requestFocus(FocusNode());
     String roomName = _nameController.text;
     String roomDesc = _descriptionController.text;
@@ -576,54 +599,62 @@ class _AddHomeStayState extends State<AddHomeStay> {
     String roomState = _stateController.text;
     String roomLocality = _localityController.text;
 
-    String base64Image = base64Encode(image!.readAsBytesSync());
-    String base64Image1 = base64Encode(image1!.readAsBytesSync());
-    String base64Image2 = base64Encode(image2!.readAsBytesSync());
+    // String base64Image = base64Encode(image!.readAsBytesSync());
+    // String base64Image1 = base64Encode(image1!.readAsBytesSync());
+    // String base64Image2 = base64Encode(image2!.readAsBytesSync());
 
-    http.post(Uri.parse("${Config.server}/homestay/php/addRoom.php"), body: {
-      "roomName": roomName,
-      "roomDesc": roomDesc,
-      "roomCategory": roomCategory,
-      "roomProperty": roomProperty,
-      "roomPrice": roomPrice,
-      "roomState": roomState,
-      "roomLocality": roomLocality,
-      "roomLatitude": _lat,
-      "roomLongtitude": _lng,
-      "userId": widget.user.id,
-      "image": base64Image,
-      "image1": base64Image1,
-      "image2": base64Image2,
-    }).then((response) {
-      var data = jsonDecode(response.body);
+
+    http.post(Uri.parse("${Config.server}/homestay/php/editRoom.php"),
+    
+        body: {
+          "roomId" : widget.room.roomId,
+          "roomName": roomName,
+          "roomDesc": roomDesc,
+          "roomCategory": roomCategory,
+          "roomProperty": roomProperty,
+          "roomPrice": roomPrice,
+          "roomState": roomState,
+          "roomLocality": roomLocality,
+          "roomLatitude" : _lat,
+          "roomLongtitude": _lng,
+          "userId" : widget.user.id,
+          // "image" : base64Image,
+          // "image1" : base64Image1,
+          // "image2" : base64Image2,
+        }).then((response) {
+          
+          
+      var data =  jsonDecode(response.body);
+      print(data);
 
       if (response.statusCode == 200 && data['status'] == 'success') {
-        Fluttertoast.showToast(
-          msg: "Added Success",
-          toastLength: Toast.LENGTH_LONG,
-          gravity: ToastGravity.BOTTOM,
-          timeInSecForIosWeb: 1,
-          fontSize: 20.0,
-        );
+         Fluttertoast.showToast(
+              msg: "Update Success",
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+              fontSize: 20.0,
+            );
 
         ProgressDialog progressDialog = ProgressDialog(context,
             message: const Text("Redirecting to Seller Page...."),
-            title: const Text("Add Room Success"));
+            title: const Text("Update Room Success"));
         progressDialog.show();
         Future.delayed(const Duration(seconds: 3)).then(
           (value) {
+           
             progressDialog.dismiss();
-            Navigator.pop(
+            Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (BuildContext context) =>
-                        SellerPage(user: widget.user)));
+                    builder: (BuildContext context) => SellerPage(user:widget.user)));
           },
         );
         return;
       } else {
+       
         Fluttertoast.showToast(
-          msg: "Homestay add Failed",
+          msg: "Homestay update Failed",
           toastLength: Toast.LENGTH_LONG,
           gravity: ToastGravity.BOTTOM,
           timeInSecForIosWeb: 1,
@@ -671,7 +702,7 @@ class _AddHomeStayState extends State<AddHomeStay> {
     );
   }
 
-  void selectImage1() {
+   void selectImage1() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -708,7 +739,8 @@ class _AddHomeStayState extends State<AddHomeStay> {
     );
   }
 
-  void selectImage2() {
+
+   void selectImage2() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -750,13 +782,15 @@ class _AddHomeStayState extends State<AddHomeStay> {
     if (image == null) return;
     final imageTemporary = File(image.path);
     setState(() => this.image = imageTemporary);
-  }
 
+  }
   Future<void> _selectfromGallery1() async {
     final image = await ImagePicker().pickImage(source: ImageSource.gallery);
     if (image == null) return;
     final imageTemporary = File(image.path);
     setState(() => this.image1 = imageTemporary);
+
+  
   }
 
   Future<void> _selectfromGallery2() async {
@@ -779,4 +813,9 @@ class _AddHomeStayState extends State<AddHomeStay> {
       print('No image selected.');
     }
   }
-}
+
+ 
+  }
+
+ 
+
